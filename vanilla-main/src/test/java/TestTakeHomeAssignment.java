@@ -1,8 +1,12 @@
 import amazon.config.EnvFactory;
+import amazon.constants.Constants;
 import amazon.factories.DriverFactory;
 import amazon.pages.LandingPage;
+import amazon.pages.ProductDetailPage;
 import amazon.pages.ProductPage;
+import amazon.utilities.Helpers;
 import com.typesafe.config.Config;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -20,37 +24,39 @@ public class TestTakeHomeAssignment {
     private static final String HOME_PAGE_URL = config.getString("HOME_PAGE_URL");
     private WebDriver driver = DriverFactory.getDriver();
 
-
     public LandingPage landingPage;
     public ProductPage productPage;
+
+    public ProductDetailPage productDetailPage;
+    public Helpers helpers;
 
     @Tag("smokeTest")
     @DisplayName("This test is for the take home assignment for Clipboard Health.")
     @Test
-    void assertAboutUsIsPresent() throws InterruptedException {
-        driver.get(HOME_PAGE_URL);
+    void assertAboutThisItemIsPresent() throws InterruptedException {
         landingPage = new LandingPage(driver);
+        helpers = new Helpers(driver);
+        productPage = new ProductPage(driver);
+        productDetailPage = new ProductDetailPage(driver);
+        driver.get(HOME_PAGE_URL);
         landingPage.doClickAllMenu();
         landingPage.doClickAllMenuItem("TV, Appliances, Electronics");
         landingPage.doClickAllMenuItem("Televisions");
         Thread.sleep(2000);
-        WebElement element = driver.findElement(By.xpath("//span[text()='Brands']"));
-        JavascriptExecutor js = (JavascriptExecutor) driver;
-        js.executeScript("arguments[0].scrollIntoView(true);", element);
-        productPage = new ProductPage(driver);
+        helpers.scrollToElementByJS(driver.findElement(By.xpath("//span[text()='Brands']")));
         productPage.doClickOnCheckbox("Samsung");
-        driver.findElement(By.id("a-autoid-0-announce")).click();
-        driver.findElement(By.id("s-result-sort-select_2")).click();
+        helpers.doClick(By.id("a-autoid-0-announce"));
+        helpers.doClick(By.id("s-result-sort-select_2"));
         Thread.sleep(2000);
-        List<WebElement> priceList = driver.findElements(By.xpath("//*[@class='a-price-whole']"));
-        priceList.get(1).click();
+        helpers.getElements(By.xpath("//*[@class='a-price-whole']")).get(1).click();
         String winHandleBefore = driver.getWindowHandle();
         for(String winHandle : driver.getWindowHandles()){
             driver.switchTo().window(winHandle);
         }
-        driver.findElement((By.xpath("//*[@class='a-size-base-plus a-text-bold']"))).isDisplayed();
-        String about_us = driver.findElement(By.xpath("//*[@class='a-size-base-plus a-text-bold']//following-sibling::*[@class='a-unordered-list a-vertical a-spacing-mini']")).getText();
-        System.out.println(about_us);
+        productDetailPage.aboutThisItemIsDisplayed();
+        String aboutProductDetailContent = productDetailPage.aboutThisItemDetailContent();
+        assertEquals(aboutProductDetailContent, Constants.SECOND_HIGHEST_PRICED_PRODUCT_DETAIL);
+        System.out.println(productDetailPage.aboutThisItemDetailContent());
         driver.close();
         driver.switchTo().window(winHandleBefore);
     }
