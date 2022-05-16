@@ -5,8 +5,11 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +45,28 @@ public class Helpers {
     public void scrollToElementByJS(WebElement element) {
         JavascriptExecutor js = (JavascriptExecutor) driver;
         js.executeScript("arguments[0].scrollIntoView(true);", element);
+    }
+
+    public void switchToAnotherWindow() {
+        for(String winHandle : driver.getWindowHandles()){
+            driver.switchTo().window(winHandle);
+        }
+    }
+
+    public void switchToMainWindow(){
+        String winHandleBefore = driver.getWindowHandle();
+        driver.switchTo().window(winHandleBefore);
+        driver.close();
+    }
+
+    public WebElement waitForElementToBeVisible(By locator, int timeOut) {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeOut));
+        return wait.until(ExpectedConditions.visibilityOfElementLocated(locator));
+    }
+
+    public void clickElementWhenReady(By locator, int timeOut) {
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeOut));
+        wait.until(ExpectedConditions.elementToBeClickable(getElement(locator))).click();
     }
 
 }
